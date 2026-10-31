@@ -1,0 +1,148 @@
+@font-face {
+  font-family: 'MenuFont';
+  src: url('fonts/Poppins-Regular.ttf');
+  font-weight: 400;
+}
+@font-face {
+  font-family: 'MenuFont';
+  src: url('fonts/Poppins-SemiBold.ttf');
+  font-weight: 600;
+}
+
+/* ====== AJUSTES RAPIDOS ====== */
+:root {
+  --left: 220px;         /* en coche: se ajusta solo a la derecha del minimapa (valor de respaldo) */
+  --left-foot: 24px;     /* a pie: esquina inferior izquierda */
+  --bottom: 24px;        /* en coche: se alinea con la parte baja del minimapa (valor de respaldo) */
+  --bottom-foot: 34px;   /* altura a pie (sin minimapa) */
+  --gap: 10px;           /* espacio entre lineas */
+  --abp-size: 19px;
+  --dir-size: 19px;
+  --street-size: 16px;
+  --ico-size: 17px;      /* tamano de los iconos */
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%; height: 100%;
+  background: transparent; overflow: hidden;
+  font-family: 'MenuFont', 'Segoe UI', Verdana, Arial, sans-serif;
+  user-select: none;
+}
+
+/* Solo texto: la sombra es lo que da lectura sobre cualquier fondo */
+#loc {
+  position: fixed;
+  left: var(--left); bottom: var(--bottom);
+  display: flex; flex-direction: column; align-items: flex-start; gap: var(--gap);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.95), 0 0 8px rgba(0, 0, 0, 0.6);
+  transition: bottom 0.35s ease, left 0.35s ease;
+}
+
+/* A pie: el bloque baja a la esquina porque no hay minimapa */
+#loc.onfoot { left: var(--left-foot); bottom: var(--bottom-foot); }
+
+.line {
+  display: flex; align-items: center; gap: 10px;
+  line-height: 1.2; white-space: nowrap;
+}
+
+/* Columna de iconos de ancho fijo: los tres textos quedan alineados */
+.ico { width: var(--ico-size); height: var(--ico-size); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.ico svg { width: var(--ico-size); height: var(--ico-size); display: block; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.8)); }
+
+/* ABP */
+.abp {
+  color: #ffffff;
+  font-size: var(--abp-size); font-weight: 400; letter-spacing: 0.2px;
+}
+.abp-dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.9), 0 1px 3px rgba(0, 0, 0, 0.7);
+}
+
+/* Direccion */
+.dir {
+  color: #ffffff;
+  font-size: var(--dir-size); font-weight: 600; letter-spacing: 0.3px;
+}
+#dirArrow { transition: transform 0.25s ease-out; }
+
+/* Calle */
+.street {
+  color: #d5d9de;
+  font-size: var(--street-size); font-weight: 400;
+}
+
+/* ====== VELOCIMETRO ====== */
+#speedo {
+  position: fixed;
+  right: 28px; bottom: 28px;
+  width: 200px; height: 200px;
+  opacity: 0;
+  transform: scale(0.92);
+  transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.2, 1.4, 0.4, 1);
+  pointer-events: none;
+}
+#speedo.show { opacity: 1; transform: none; }
+
+/* Fondo plano oscuro, sin degradados */
+#speedo::before {
+  content: '';
+  position: absolute; inset: 18px;
+  border-radius: 50%;
+  background: rgba(10, 11, 13, 0.5);
+}
+#speedo > svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+/* Barra gorda, extremos rectos */
+.track, .prog { fill: none; stroke-width: 11; stroke-linecap: butt; }
+.track { stroke: rgba(255, 255, 255, 0.16); stroke-dasharray: 75 100; }
+.prog {
+  stroke: #ffffff;
+  stroke-dasharray: 0 100;
+  transition: stroke-dasharray 0.18s ease-out;
+}
+/* Zona roja: parpadea */
+.prog.red { animation: redline 0.35s ease-in-out infinite alternate; }
+@keyframes redline { from { opacity: 1; } to { opacity: 0.45; } }
+
+.sp-center {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding-bottom: 12px;
+  color: #ffffff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+#speedVal { font-size: 54px; font-weight: 600; line-height: 1; }
+#speedUnit { font-size: 12px; color: #aeb4bb; letter-spacing: 1.5px; margin-top: 3px; }
+
+/* Gasolina: caja plana con icono, barra y porcentaje */
+.fuel {
+  position: absolute; bottom: 4px; left: 50%;
+  transform: translateX(-50%);
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 9px;
+  border-radius: 8px;
+  background: rgba(10, 11, 13, 0.7);
+  color: #ffffff;
+  font-size: 12px; font-weight: 600; letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+.fuel.hidden { display: none; }
+.fuel-ico { width: 12px; height: 12px; flex-shrink: 0; }
+.fuel-bar {
+  width: 42px; height: 6px;
+  background: rgba(255, 255, 255, 0.18);
+  overflow: hidden;
+}
+#fuelFill {
+  height: 100%; width: 100%;
+  background: #ffffff;
+  transition: width 0.4s ease, background 0.3s linear;
+}
+/* Poca gasolina: parpadea */
+.fuel.low #fuelFill, .fuel.low #fuelVal { animation: lowfuel 0.5s ease-in-out infinite alternate; }
+@keyframes lowfuel { from { opacity: 1; } to { opacity: 0.35; } }
